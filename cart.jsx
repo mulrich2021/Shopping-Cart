@@ -102,25 +102,33 @@ const Products = (props) => {
   const addToCart = (e) => {
     let name = e.target.name;
     let item = items.filter((item) => item.name == name);
+    if (item[0].instock == 0) return;
+    item[0].instock = item[0].instock - 1;
     console.log(`add to Cart ${JSON.stringify(item)}`);
     setCart([...cart, ...item]);
-    //doFetch(query);
   };
-  const deleteCartItem = (index) => {
-    let newCart = cart.filter((item, i) => index != i);
+  const deleteCartItem = (delIndex) => {
+    // this is the index in the cart not in the Product List
+
+    let newCart = cart.filter((item, i) => delIndex != i);
+    let target = cart.filter((item, index) => delIndex == index);
+    let newItems = items.map((item, index) => {
+      if (item.name == target[0].name) item.instock = item.instock + 1;
+      return item;
+    });
     setCart(newCart);
+    setItems(newItems);
   };
   const photos = ["apple.png", "orange.png", "beans.png", "cabbage.png"];
 
   let list = items.map((item, index) => {
-    //let n = index + 1049;
-    //let url = "https://picsum.photos/id/" + n + "/50/50";
-
+    let n = index + 1049;
+    let uhit = "https://picsum.photos/" + n;
     return (
       <li key={index}>
-        <Image src={photos[index % 4]} width={70} roundedCircle></Image>
+        <Image src={uhit} width={70} roundedCircle></Image>
         <Button variant="primary" size="large">
-          {item.name}:{item.cost}
+          {item.name}:${item.cost}-Stock={item.instock}
         </Button>
         <input name={item.name} type="submit" onClick={addToCart}></input>
       </li>
@@ -163,6 +171,7 @@ const Products = (props) => {
     const reducer = (accum, current) => accum + current;
     let newTotal = costs.reduce(reducer, 0);
     console.log(`total updated to ${newTotal}`);
+    //cart.map((item, index) => deleteCartItem(index));
     return newTotal;
   };
   const restockProducts = (url) => {
@@ -194,7 +203,7 @@ const Products = (props) => {
       <Row>
         <form
           onSubmit={(event) => {
-            restockProducts(`http://localhost:1337/${query}`);
+            restockProducts(`http://localhost:1337/products`);
             console.log(`Restock called on ${query}`);
             event.preventDefault();
           }}
